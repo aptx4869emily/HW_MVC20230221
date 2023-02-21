@@ -1,0 +1,88 @@
+﻿@model Demo20230215.Models.EmployeeModel
+@{
+    ViewBag.Title = "Insert1";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Insert1</h2>
+
+@using (Html.BeginForm("", "", FormMethod.Post, new { name = "insertForm", id = "insertForm" })) {
+    <div class="row row-cols-2">
+        <div class="col">@Html.LabelFor(Model => Model.EmpNo)</div>
+        <div class="col">@Html.TextBoxFor(Model => Model.EmpNo)</div>
+        <div class="col">@Html.LabelFor(Model => Model.Name)</div>
+        <div class="col">@Html.TextBoxFor(Model => Model.Name)</div>
+        <div class="col">@Html.LabelFor(Model => Model.Ext)</div>
+        <div class="col">@Html.TextBoxFor(Model => Model.Ext)</div>
+
+    </div>
+    <input class="btn btn-primary" type="button" id="SaveID" value="儲存" />
+}
+
+
+
+@section Scripts{
+    <script>
+        $(function () {
+        });
+
+        $('#SaveID').click(function (e) {
+            let EmpNo = $('input[name="EmpNo"]').val();
+            let Name = $('input[name="Name"]').val();
+            let Ext = $('input[name="Ext"]').val();
+            console.log(EmpNo + " " + Name + " " + Ext)
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("_EmpData")',
+                data: '',
+                dataType:'HTML',
+                success: function (r) {
+                    console.log(r)
+                    if (r.includes(EmpNo)) {
+                        alert('員編已存在');
+                    }
+                    else {
+                        if (EmpNo == "" || Name == "" || Ext == "") {
+                            alert("請將資料填寫完整");
+                        }
+                        else if (!(!isNaN(parseFloat(Ext)) && isFinite(Ext))) {
+                            alert("分機須為數字");
+                        }
+                        else {
+                            $.ajax({
+                                type: 'POST',
+                                url: '@Url.Action("Save1")',
+                                data: $('#insertForm').serialize(),  //後端用model接
+                                success: function (r) {
+                                    if (r.IsSuccess) {
+                                        alert('儲存成功');
+                                        window.location.href = "Index.chtml"
+                                    }
+                                    else {
+                                        alert(r.Msg);
+                                    }
+                                },
+                                error: function (a, b, c) {
+                                    console.log(a);
+                                    console.log(b);
+                                    console.log(c);
+                                }
+
+                            });
+                        }
+                    }
+                },
+                error: function (a, b, c) {
+                    console.log(a);
+                    console.log(b);
+                    console.log(c);
+                }
+
+            });
+
+
+        });
+
+
+    </script>
+}

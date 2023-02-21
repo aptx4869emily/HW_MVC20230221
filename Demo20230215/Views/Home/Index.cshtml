@@ -1,0 +1,184 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+<h2>Empolyee Date</h2>
+<div calss="row">
+    <div class="col-md-3">輸入電腦編號</div>
+    <div class="col-md-3"><input type="text" id="txtEmpNo" /></div>
+    <div class="col-md-3"><input type="button" id="btnSearch" class="btn btn-primary" value="查詢" onclick="GetEmpData()" /></div>
+    <div class="col-md-3">
+        <a href="@Url.Action("Insert1")" class="btn btn-primary">新增1</a>
+        <input type="button" id="btnSearch" class="btn btn-primary" value="新增2" onclick="Insert2()" />
+    </div>
+</div>
+
+<div id="EmpDataList"></div>
+
+@section Scripts{
+    <script>
+        $(function () {
+            GetEmpData();
+        });
+
+        function GetEmpData() {
+            var EmpNo = $('#txtEmpNo').val();
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("_EmpData")',
+                data: { 'EmpNo': EmpNo },
+                datatype: 'HTML',
+                success: function (r) {
+                    $('#EmpDataList').html(r);
+                },
+                error: function (a, b, c) {
+                    console.log(a)
+                    console.log(b)
+                    console.log(c)
+                }
+            });
+        }
+
+        function Delete(EmpNo) {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("DeletePost")',
+                data: { 'EmpNo': EmpNo },
+                success: function (r) {
+                    if (r.IsSuccess) {
+                        alert('ok');
+                        GetEmpData();
+                    }
+                    else {
+                        alert('r.Msg');
+                    }
+                },
+                error: function (a, b, c) {
+                    console.log(a)
+                    console.log(b)
+                    console.log(c)
+                }
+
+            });
+        }
+
+        //新增一列
+        function Insert2() {
+            let row = '';
+            row += '<tr>'
+            row += '<td class="text-center"><input type type="text" style="width:160px" id="EmpNoID" value="" /></td>'
+            row += '<td class="text-center"><input type type="text" style="width:160px" id="NameID" value="" /></td>'
+            row += '<td class="text-center"><input type type="text" style="width:160px" id="ExtID" value="" /></td>'
+            row += '<td class="text-center">'
+            row += '<input type = "button" value = "儲存" class="btn btn-info" onclick = "Save()" /> '
+            row += '<input type="button" value="取消" class="btn btn-danger" onclick="Cancel()" />'
+            row += '</td></tr>'
+            console.log(row)
+            //console.log($('#EmpDataList').html());
+            let tableHtml = $('#EmpDataList').html().replace('</tbody></table>', '');
+
+            let allArr = [];
+            $('#EmpDataList tbody tr').each(function () {
+                allArr.push($("td:eq(0)", this).text());  //eq(0) -> 第一行
+            });
+
+            //固定只新增一筆
+            if (allArr[allArr.length - 1] == "") {
+                $('#EmpNoID').focus();
+            }
+            else {
+                //console.log(tableHtml);
+                tableHtml += row;
+                $('#EmpDataList').html(tableHtml);
+                $('#EmpNoID').focus();
+            }
+        }
+
+        //儲存
+        function Save() {
+            let EmpNo = $('#EmpNoID').val();
+            let Name = $('#NameID').val();
+            let Ext = $('#ExtID').val();
+            let num = check(EmpNo, Name, Ext);
+            //console.log(EmpNo+" "+Name+" "+Ext+" "+ num)
+            switch (num) {
+                case '1': {
+                    alert("請將資料填寫完整");
+                    break;
+                }
+                case '2': {
+                    alert("分機須為數字");
+                    break;
+                }
+                case '3': {
+                    $('#EmpNoID').focus();
+                    alert("該員編已存在");
+                    break;
+                }
+                default: {
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("Save2")',
+                        data: {
+                            "EmpNo": EmpNo,
+                            "Name": Name,
+                            "Ext": Ext
+                        },
+                        success: function (r) {
+                            if (r.IsSuccess) {
+                                window.location.reload();
+                            }
+                            else {
+                                alert(r.Msg);
+                            }
+                        },
+                        error: function (a, b, c) {
+                            console.log(a)
+                            console.log(b)
+                            console.log(c)
+                        }
+
+                    });
+                }
+            }
+        }
+
+        //取消
+        function Cancel() {
+            window.location.reload();
+        }
+
+        //檢查
+        function check(EmpNo, Name, Ext) {
+            if (EmpNo == "" || Name == ""  || Ext == "") {
+                return "1";
+            }
+            else if (!(!isNaN(parseFloat(Ext)) && isFinite(Ext))) {
+                return "2";
+            }
+            else if (hasRepeat(EmpNo)) {
+                return "3";
+            }
+            else {
+                return "4";
+            }
+        }
+
+        //判斷原編是否已存在
+        function hasRepeat(EmoNoID) {
+            let allArr = []; //放table第一行的所有值(表頭+內容)
+            $('#EmpDataList tbody tr').each(function () {
+                allArr.push($("td:eq(0)", this).text());
+            });
+
+            //allArr[0] -> 表頭  ； allArr[allArr.length - 1] -> 新增的參數
+            for (let i = 1; i < allArr.length - 1; i++) {
+                if (EmoNoID == allArr[i]) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+    </script>
+   
+} 

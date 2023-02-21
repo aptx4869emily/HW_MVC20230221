@@ -1,0 +1,23 @@
+﻿@model List<Demo20230215.Models.EmployeeModel>
+
+
+    <table class="table table-bordered table-responsive" id="emplistID">
+        <tr>
+            <th class="text-center" style="width:180px">@Html.LabelFor(model => model.FirstOrDefault().EmpNo) </th>
+            <th class="text-center" style="width:180px">@Html.LabelFor(model => model.FirstOrDefault().Name) </th>
+            <th class="text-center" style="width:180px">@Html.LabelFor(model => model.FirstOrDefault().Ext) </th>
+            <th class="text-center" style="width:180px">功能 </th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr id="emplistTR">
+                <td class="text-center">@item.EmpNo</td>
+                <td class="text-center">@item.Name</td>
+                <td class="text-center">@item.Ext</td>
+                <td class="text-center">
+                    <a href="@Url.Action("Edit", new { EmpNo = item.EmpNo})" class="btn btn-warning">修改</a>
+                    <input type="button" value="刪除" class="btn btn-danger" onclick="Delete('@item.EmpNo')" />
+                </td>
+            </tr>
+        }
+    </table>
